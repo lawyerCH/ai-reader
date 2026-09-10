@@ -10,9 +10,9 @@
    │
    ├─ https://ai-reader-web.onrender.com   （Static Site，CDN，免费，不休眠）
    │     └─ Vite 构建产物（React SPA + PWA）
-   │           └─ VITE_API_BASE=https://ai-reader-api.onrender.com
+   │           └─ VITE_API_BASE=https://ai-reader-api-zo6t.onrender.com
    │
-   └─ https://ai-reader-api.onrender.com   （Python Web Service）
+   └─ https://ai-reader-api-zo6t.onrender.com   （Python Web Service）
          ├─ FastAPI：/api/*（REST）
          ├─ WebSocket：/ws/*（问答流式）
          └─ SQLite（backend/data/ai_reader.db，免费套餐为临时文件系统）
@@ -29,22 +29,65 @@
    - 本地仓库**已初始化**（分支 `main`，含首次提交），只差推送到远端。
 2. Render 账号（免费注册即可）。
 
-## 部署步骤
+## 部署步骤（2025-09 实测：Render REST API 方式）
 
-> 当前进度：**本地仓库已初始化并推送到 GitHub**（`lawyerCH/ai-reader`，私有，`main` 分支）。
-> 剩余步骤全部在 Render 网页上完成，无需命令行。
+> 当前状态：**已部署上线**，两个服务均 Live。
+> - 仓库：`lawyerCH/ai-reader`（**已设为 public**，Render 拉取公开仓库无需 GitHub 集成授权）
+> - 后端：https://ai-reader-api-zo6t.onrender.com （`srv-dah4vn942hec73eqlhqg`）
+> - 前端：https://ai-reader-web.onrender.com （`srv-dah504ajnfac738at370`）
+
+### 方式 A：Render REST API（本次实际使用，可全命令行）
+
+前置：`brew install render` → `render login`（浏览器授权）→ token 在 `~/.render/cli.yaml`（`api.key`，可作 Bearer）。
+
+**创建后端 Web Service**（关键字段结构，踩坑总结）：
+
+```json
+POST https://api.render.com/v1/services
+{
+  "type": "web_service",            // 不是 "web"
+  "name": "ai-reader-api",
+  "ownerID": "<workspace-id>",      // 必填，= 工作区 ID（tea- 开头）
+  "repo": "https://github.com/lawyerCH/ai-reader",
+  "branch": "main",
+  "autoDeploy": "yes",
+  "rootDir": "backend",             // ⚠️ 必须放顶层！放 serviceDetails 里不生效
+  "serviceDetails": {
+    "env": "python",
+    "plan": "free",
+    "region": "singapore",
+    "healthCheckPath": "/api/health",
+    "envSpecificDetails": {         // 非 static 非 docker 服务必填
+      "buildCommand": "pip install -r requirements.txt",
+      "startCommand": "uvicorn app.main:app --host 0.0.0.0 --port $PORT --workers 1"
+    }
+  }
+}
+```
+
+**创建前端 Static Site**：`type: "static_site"`，serviceDetails 用 **`publishPath`**（不是 Blueprint 的 `staticPublishPath`）。
+
+**独立子端点（body 均为裸 JSON 数组，包一层对象会报 `invalid JSON`）**：
+- `PUT /v1/services/{id}/env-vars` ← `[{"key":"K","value":"V"}]`
+- `PUT /v1/services/{id}/routes` ← `[{"type":"rewrite","source":"/*","destination":"/index.html"}]`
+- `PUT /v1/services/{id}/headers` ← `[{"path":"/assets/*","name":"Cache-Control","value":"..."}]`
+- `POST /v1/services/{id}/deploys`（body `{}`，成功返回 **202 且 body 为空**——不要误判为失败）
+- `PATCH /v1/services/{id}` 顶层字段（如 `{"rootDir":"backend"}`）有效
+- `GET /v1/services/{id}` 不返回 routes/headers（显示 null），须用各自 GET 子端点复核
+
+**已配置的环境变量**：
+- api：`PYTHON_VERSION=3.12.13`
+- web：`NODE_VERSION=22.11.0`、`VITE_API_BASE=ai-reader-api-zo6t.onrender.com`（裸主机名，前端自动补 `https://`）
+
+### 方式 B：Blueprint（网页操作，需 GitHub 集成授权）
 
 1. 打开 https://dashboard.render.com 登录。
 2. **New → Blueprint** → 连接 GitHub → 授权 Render 访问 `lawyerCH` 账号 → 选择 **ai-reader** 仓库。
 3. 确认 `render.yaml` 被识别（两个服务：`ai-reader-api` + `ai-reader-web`），点 **Deploy Blueprint**。
-4. 等两个服务都显示 **Live**（api 先、web 后，约 5-10 分钟），打开 `https://ai-reader-web.onrender.com` 即可使用。
+4. 等两个服务都显示 **Live**，打开 `https://ai-reader-web.onrender.com` 即可使用。
 
 > 注意 `.gitignore` 已排除 `node_modules/`、`.venv/`、`dist/`、`backend/data/` 等，
 > 提交前可用 `git status` 确认没有大文件混入。
-
-2. 打开 Render Dashboard → **New → Blueprint** → 连接刚才的仓库。
-3. 确认 `render.yaml` 被识别（两个服务：`ai-reader-api` + `ai-reader-web`），点 **Deploy Blueprint**。
-4. 等两个服务都显示 **Live**，打开 `https://ai-reader-web.onrender.com` 即可使用。
 
 ## 免费套餐的取舍（重要）
 
