@@ -26,17 +26,15 @@
 
 1. **代码必须在 Git 仓库中**（Render 无法从本地目录部署）。
    - 需要 GitHub / GitLab / Bitbucket 账号，把本目录推上去。
-   - 当前目录还不是 git 仓库，第一步就是 `git init`。
+   - 本地仓库**已初始化**（分支 `main`，含首次提交），只差推送到远端。
 2. Render 账号（免费注册即可）。
 
 ## 部署步骤
 
 ```bash
-# 1. 初始化仓库并推送（在 render-deploy/ 目录内）
+# 1. 推送到远端（本地仓库已初始化，在 render-deploy/ 目录内）
 cd render-deploy
-git init
-git add -A
-git commit -m "AI 读者阅读系统：Render 部署副本"
+# 先在 GitHub 网页上新建一个空仓库（不要勾选 README/.gitignore），然后：
 git remote add origin https://github.com/<你的账号>/ai-reader.git
 git push -u origin main
 ```
@@ -100,6 +98,32 @@ VITE_API_BASE=http://127.0.0.1:8001 npm run build   # 模拟跨域构建
 npm run preview -- --port 4173
 # 打开 http://localhost:4173 验证
 ```
+
+## 本地已验证的行为
+
+以下均在本地按 Render 的构建/启动命令逐项实测通过（2025-09 验证）：
+
+| 项目 | 结果 |
+| --- | --- |
+| 后端冷启动（`data/` 不存在） | 自动创建目录 + 自动装书 3 本鲁迅（269 条批注） |
+| `GET /api/health` | 200，无 LLM Key 时 `llm:false`，走本地启发式引擎 |
+| `GET /api/books` 跨域 | 200，CORS 预检与实际请求均通过 |
+| `WebSocket /ws/read/{bid}` 跨域 | 连接成功，收到 `annotation`/`digest`/`done` 事件 |
+| 前端构建（设 `VITE_API_BASE`） | 值内联进产物；未设时为 0 处引用，回落同源 |
+| `wsUrl()` scheme 推导 | 裸主机名 / `https` / `http` 三种形态均正确映射到 `ws(s)://` |
+| API-only 模式（无 `frontend/dist`） | `/` 404、`/api/*` 200、`/docs` 200（符合设计） |
+| 后端测试 `pytest tests/test_api.py` | 8 passed |
+| 前端测试 `npm test` | 5 passed |
+
+## 已知问题（沿袭原项目，未修改）
+
+这些行为与原项目完全一致，本次部署副本**刻意不改**，以保持两边一致：
+
+1. **阅读时长不记录**：前端 `Reader.tsx` 创建阅读会话时使用了章节详情接口不存在的
+   `word_count` 字段，导致 `POST /api/books/{id}/sessions` 恒返回 422，
+   且前端静默忽略该错误 —— 功能上不影响阅读，只是"阅读时长统计"永远为空。
+2. **`tests/test_nlp.py` 无法收集**：`tests/` 目录缺 `__init__.py`，相对导入失败。
+   `pytest tests/test_api.py` 可正常运行，`render.yaml` 的 `healthCheckPath` 也不依赖测试。
 
 ## 常见问题
 
