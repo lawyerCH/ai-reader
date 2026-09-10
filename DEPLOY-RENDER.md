@@ -31,13 +31,13 @@
 
 ## 部署步骤
 
-```bash
-# 1. 推送到远端（本地仓库已初始化，在 render-deploy/ 目录内）
-cd render-deploy
-# 先在 GitHub 网页上新建一个空仓库（不要勾选 README/.gitignore），然后：
-git remote add origin https://github.com/<你的账号>/ai-reader.git
-git push -u origin main
-```
+> 当前进度：**本地仓库已初始化并推送到 GitHub**（`lawyerCH/ai-reader`，私有，`main` 分支）。
+> 剩余步骤全部在 Render 网页上完成，无需命令行。
+
+1. 打开 https://dashboard.render.com 登录。
+2. **New → Blueprint** → 连接 GitHub → 授权 Render 访问 `lawyerCH` 账号 → 选择 **ai-reader** 仓库。
+3. 确认 `render.yaml` 被识别（两个服务：`ai-reader-api` + `ai-reader-web`），点 **Deploy Blueprint**。
+4. 等两个服务都显示 **Live**（api 先、web 后，约 5-10 分钟），打开 `https://ai-reader-web.onrender.com` 即可使用。
 
 > 注意 `.gitignore` 已排除 `node_modules/`、`.venv/`、`dist/`、`backend/data/` 等，
 > 提交前可用 `git status` 确认没有大文件混入。
