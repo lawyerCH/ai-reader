@@ -1,0 +1,74 @@
+# Render Blueprint —— AI 读者阅读系统
+# 用法：把本仓库推到 GitHub，然后在 Render Dashboard 点 New > Blueprint，连接该仓库即可。
+# 参考：https://render.com/docs/blueprint-spec
+#
+# 架构：两个服务
+#   1) ai-reader-api   —— 纯 Python 后端（FastAPI + SQLite + WebSocket），不碰 node
+#   2) ai-reader-web   —— 前端静态站（Vite 构建产物），走 Render 全球 CDN，免费且不休眠
+# 前端通过 VITE_API_BASE 指向后端；后端 CORS 已全开（main.py 中 CORS_ORIGINS + ["*"]），开箱即通。
+
+services:
+  # ============ 后端：Python Web Service ============
+  - type: web
+    name: ai-reader-api
+    runtime: python
+    plan: free            # 免费：750 实例小时/月，15 分钟无流量休眠，冷启动约 1 分钟
+    region: singapore     # 离国内最近的区域（无大陆节点）
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT --workers 1
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.13"          # 与本地开发环境一致
+      # 首次启动且书架为空时自动装入 3 本鲁迅演示书（公有领域）。
+      # 若不想自动装书，取消下一行注释：
+      # - key: AIREADER_NO_SEED
+      #   value: "1"
+      # 可选：接入 OpenAI 兼容大模型（不配置则用内置本地启发式引擎，功能完整）
+      # - key: AIREADER_LLM_BASE_URL
+      #   sync: false
+      # - key: AIREADER_LLM_API_KEY
+      #   sync: false
+      # - key: AIREADER_LLM_MODEL
+      #   value: gpt-4o-mini
+    # 免费套餐没有持久盘，重启/重部署/休眠后 SQLite 与上传的书籍会丢失。
+    # 升级到付费套餐后，取消下面注释即可挂持久盘（数据存 /var/data）：
+    # disk:
+    #   name: ai-reader-data
+    #   mountPath: /var/data
+    #   sizeGB: 1
+    # envVars:
+    #   - key: AIREADER_DATA
+    #     value: /var/data
+
+  # ============ 前端：Static Site（CDN，免费，不休眠） ============
+  - type: web
+    name: ai-reader-web
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm ci && npm run build
+    staticPublishPath: ./dist
+    autoDeploy: true
+    envVars:
+      # 构建期注入后端地址（仅主机名，前端代码会自动补 https://）
+      - key: VITE_API_BASE
+        fromService:
+          type: web
+          name: ai-reader-api
+          property: host
+      - key: NODE_VERSION
+        value: "22.11.0"
+    # SPA 路由回退：不存在的路径一律返回 index.html（真实文件优先，不受此规则影响）
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    headers:
+      - path: /assets/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable
+      - path: /*
+        name: Cache-Control
+        value: public, max-age=0, must-revalidate

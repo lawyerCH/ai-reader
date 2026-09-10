@@ -1,0 +1,231 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=Noto+Serif+SC:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --brand: #8a5a24;
+  --brand-deep: #6b451a;
+  --brand-soft: #d97706;
+  --chrome-bg: #f5efe3;
+  --chrome-panel: #fffcf6;
+  --chrome-ink: #2b2620;
+  --chrome-muted: #83796c;
+  --chrome-border: #e7ddcb;
+  --shadow-card: 0 1px 2px rgba(60, 45, 20, .06), 0 10px 28px rgba(60, 45, 20, .08);
+}
+
+* { -webkit-tap-highlight-color: transparent; }
+
+html, body, #root { height: 100%; }
+
+body {
+  margin: 0;
+  font-family: "Noto Sans SC", system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+  color: var(--chrome-ink);
+  background: var(--chrome-bg);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection { background: rgba(217, 119, 6, .25); }
+
+/* ---------------- 阅读主题 ---------------- */
+.reader-root {
+  --r-font-size: 20px;
+  --r-line-height: 1.9;
+  --r-para-gap: 1.15em;
+  --r-letter-space: .02em;
+  --r-measure: 38em;
+  --r-font-family: "Noto Serif SC", "Songti SC", STSong, SimSun, serif;
+}
+[data-theme='paper'] {
+  --r-bg: #f6efe0; --r-fg: #2e2922; --r-muted: #8a7d68;
+  --r-card: #fffdf7; --r-border: #e3d6bb; --r-rail: #efe6d1;
+  --r-accent: #b45309;
+}
+[data-theme='white'] {
+  --r-bg: #ffffff; --r-fg: #1f2933; --r-muted: #8a93a0;
+  --r-card: #f7f8fa; --r-border: #e6e8ec; --r-rail: #f4f5f7;
+  --r-accent: #1e40af;
+}
+[data-theme='parchment'] {
+  --r-bg: #ecddbd; --r-fg: #3a2d17; --r-muted: #86724f;
+  --r-card: #f5ecd4; --r-border: #d8c398; --r-rail: #e5d5b0;
+  --r-accent: #92400e;
+}
+[data-theme='green'] {
+  --r-bg: #dfe8d6; --r-fg: #27352a; --r-muted: #6d7d68;
+  --r-card: #eaf1e2; --r-border: #c6d4b8; --r-rail: #d5e0c9;
+  --r-accent: #3f6212;
+}
+[data-theme='blue'] {
+  --r-bg: #e3ecf4; --r-fg: #20303f; --r-muted: #687c8e;
+  --r-card: #edf3f9; --r-border: #c7d6e3; --r-rail: #d6e1ec;
+  --r-accent: #1d4ed8;
+}
+[data-theme='pink'] {
+  --r-bg: #f7e9ee; --r-fg: #3d2530; --r-muted: #947684;
+  --r-card: #fcf1f5; --r-border: #e8d0da; --r-rail: #f0dde5;
+  --r-accent: #be185d;
+}
+[data-theme='gray'] {
+  --r-bg: #e5e3df; --r-fg: #2c2c2e; --r-muted: #7a7a80;
+  --r-card: #efeeeb; --r-border: #d2d0cb; --r-rail: #dbd9d4;
+  --r-accent: #52525b;
+}
+[data-theme='sepia-night'] {
+  --r-bg: #211a12; --r-fg: #dcc8a6; --r-muted: #9a8668;
+  --r-card: #2b2218; --r-border: #403424; --r-rail: #241c13;
+  --r-accent: #e0a94e;
+}
+[data-theme='dark'] {
+  --r-bg: #14161b; --r-fg: #cdd2da; --r-muted: #7d8694;
+  --r-card: #1c1f26; --r-border: #2b303a; --r-rail: #181b21;
+  --r-accent: #7aa2ff;
+}
+[data-theme='amoled'] {
+  --r-bg: #000000; --r-fg: #b9bdc6; --r-muted: #6f747e;
+  --r-card: #0e0e10; --r-border: #222226; --r-rail: #0a0a0c;
+  --r-accent: #c9a96e;
+}
+
+/* ---------------- 正文排版 ---------------- */
+.reader-surface {
+  background: var(--r-bg);
+  color: var(--r-fg);
+  transition: background .25s ease, color .25s ease;
+}
+.book-content {
+  font-family: var(--r-font-family);
+  font-size: var(--r-font-size);
+  line-height: var(--r-line-height);
+  letter-spacing: var(--r-letter-space);
+}
+.book-content p {
+  margin: 0 0 var(--r-para-gap);
+  text-align: justify;
+  text-justify: inter-ideograph;
+}
+.book-content p.para {
+  text-indent: 2em;
+}
+.book-content .chapter-title {
+  font-size: 1.45em;
+  font-weight: 700;
+  text-align: center;
+  margin: .4em 0 1.6em;
+  letter-spacing: .12em;
+}
+.book-content mark {
+  border-radius: 3px;
+  padding: 0 2px;
+  color: inherit;
+}
+mark.hl-yellow { background: rgba(234, 179, 8, .32); }
+mark.hl-green  { background: rgba(34, 197, 94, .28); }
+mark.hl-blue   { background: rgba(59, 130, 246, .26); }
+mark.hl-pink   { background: rgba(236, 72, 153, .26); }
+mark.hl-orange { background: rgba(249, 115, 22, .30); }
+
+/* 段落锚点标记（右侧批注小点） */
+.anno-dot {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 20px; height: 20px; border-radius: 50%;
+  font-size: 10px; color: #fff; font-weight: 700;
+  cursor: pointer; vertical-align: middle; margin: 0 2px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.25);
+  transition: transform .15s ease;
+}
+.anno-dot:hover { transform: scale(1.18); }
+
+/* ---------------- 通用组件 ---------------- */
+.chrome-card {
+  background: var(--chrome-panel);
+  border: 1px solid var(--chrome-border);
+  border-radius: 14px;
+  box-shadow: var(--shadow-card);
+}
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  border-radius: 10px; padding: 8px 14px; font-size: 14px; font-weight: 500;
+  cursor: pointer; border: 1px solid transparent;
+  transition: background .18s ease, transform .12s ease, box-shadow .18s ease, opacity .18s;
+  user-select: none; white-space: nowrap;
+}
+.btn:active { transform: scale(.97); }
+.btn-primary { background: var(--brand); color: #fff8ef; }
+.btn-primary:hover { background: var(--brand-deep); }
+.btn-ghost { background: transparent; color: var(--chrome-ink); border-color: var(--chrome-border); }
+.btn-ghost:hover { background: rgba(138, 90, 36, .08); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.icon-btn {
+  width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 10px; cursor: pointer; color: var(--chrome-ink);
+  transition: background .15s ease;
+}
+.icon-btn:hover { background: rgba(138,90,36,.1); }
+.chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 10px; border-radius: 999px; font-size: 12px;
+  border: 1px solid var(--chrome-border); background: #fff; color: var(--chrome-muted);
+  cursor: pointer; user-select: none; transition: all .15s ease;
+}
+.chip.on { background: var(--brand); border-color: var(--brand); color: #fff8ef; }
+
+/* 输入控件 */
+.input, .select, textarea.input {
+  width: 100%; border: 1px solid var(--chrome-border); border-radius: 10px;
+  padding: 9px 12px; font-size: 14px; background: #fff; color: var(--chrome-ink);
+  outline: none; transition: border-color .15s, box-shadow .15s;
+  font-family: inherit;
+}
+.input:focus, .select:focus, textarea.input:focus {
+  border-color: var(--brand-soft);
+  box-shadow: 0 0 0 3px rgba(217,119,6,.14);
+}
+
+/* 滚动条 */
+.scroll-area::-webkit-scrollbar { width: 8px; height: 8px; }
+.scroll-area::-webkit-scrollbar-thumb { background: rgba(120,100,70,.28); border-radius: 8px; }
+.scroll-area::-webkit-scrollbar-track { background: transparent; }
+
+/* 动画 */
+@keyframes riseIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes popIn { from { opacity: 0; transform: scale(.96); } to { opacity: 1; transform: none; } }
+.rise { animation: riseIn .34s cubic-bezier(.22,1,.36,1) both; }
+.fade { animation: fadeIn .22s ease both; }
+.pop { animation: popIn .2s cubic-bezier(.22,1,.36,1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
+
+/* 翻页模式 */
+.paged-track { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth; }
+.paged-track::-webkit-scrollbar { display: none; }
+.page-sheet {
+  flex: 0 0 100%; scroll-snap-align: start;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* 顶部进度条 */
+.read-progress-bar { height: 3px; background: rgba(120,100,70,.15); }
+.read-progress-bar > div { height: 100%; background: var(--r-accent); transition: width .2s linear; }
+
+/* 打字光标 */
+.typing-caret::after {
+  content: '▍'; color: var(--r-accent, var(--brand));
+  animation: caret 1s steps(1) infinite; margin-left: 1px;
+}
+@keyframes caret { 50% { opacity: 0; } }
+
+/* 移动端安全区 */
+.safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+.safe-top { padding-top: env(safe-area-inset-top); }
+
+.line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }

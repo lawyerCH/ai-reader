@@ -1,0 +1,14 @@
+{
+  "name": "ai-reader-desktop",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AI 读书会 · 陪读阅读器桌面版",
+  "main": "main.cjs",
+  "scripts": {
+    "start": "electron .",
+    "dev": "cross-env AIREADER_SERVER=http://127.0.0.1:8000 electron ."
+  },
+  "devDependencies": {
+    "electron": "^33.2.0"
+  }
+}
